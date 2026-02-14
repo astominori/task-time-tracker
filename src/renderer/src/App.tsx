@@ -1,9 +1,11 @@
 import { useState, useEffect, useCallback } from 'react'
+import { Clock } from 'lucide-react'
 import { Category, TaskRecord } from './types'
 import { useTimer } from './hooks/useTimer'
 import TimerDisplay from './components/TimerDisplay'
 import CategoryGrid from './components/CategoryGrid'
 import TaskHistory from './components/TaskHistory'
+import ThemeToggle from './components/ThemeToggle'
 
 export default function App() {
   const [activeCategory, setActiveCategory] = useState<Category | null>(null)
@@ -60,11 +62,19 @@ export default function App() {
   )
 
   return (
-    <div className="min-h-screen bg-white pt-10">
+    <div className="min-h-screen bg-surface pt-8 transition-colors duration-300">
       <div className="max-w-md mx-auto">
-        <h1 className="text-center text-xl font-bold text-gray-800 mb-4">
-          Task Time Tracker
-        </h1>
+        {/* Header */}
+        <div className="flex items-center justify-between px-5 mb-2">
+          <div className="flex items-center gap-2">
+            <Clock size={18} className="text-text-secondary" />
+            <h1 className="text-base font-semibold text-text-primary tracking-tight">
+              Task Time Tracker
+            </h1>
+          </div>
+          <ThemeToggle />
+        </div>
+
         <TimerDisplay
           activeCategory={activeCategory}
           formattedTime={formatTime(elapsed)}

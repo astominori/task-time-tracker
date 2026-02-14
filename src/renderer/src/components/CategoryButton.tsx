@@ -1,4 +1,4 @@
-import { Category, CATEGORY_COLORS, CATEGORY_EMOJIS } from '../types'
+import { Category, CATEGORY_GRADIENTS, CATEGORY_ICONS } from '../types'
 
 interface Props {
   category: Category
@@ -7,20 +7,26 @@ interface Props {
 }
 
 export default function CategoryButton({ category, isActive, onClick }: Props) {
-  const baseColor = CATEGORY_COLORS[category]
+  const gradient = CATEGORY_GRADIENTS[category]
+  const Icon = CATEGORY_ICONS[category]
 
   return (
     <button
       onClick={() => onClick(category)}
       className={`
-        w-full py-4 px-4 rounded-xl text-white font-medium text-base
+        w-full py-3.5 px-4 rounded-xl text-white font-medium text-sm
+        bg-gradient-to-br ${gradient}
         transition-all duration-200 cursor-pointer
-        ${baseColor}
-        ${isActive ? 'ring-4 ring-offset-2 ring-yellow-400 scale-105 shadow-lg' : 'shadow-md'}
+        shadow-button hover:shadow-button-hover
+        hover:-translate-y-0.5
+        active:translate-y-0 active:scale-[0.97]
+        ${isActive ? 'ring-2 ring-offset-2 ring-white/60 scale-[1.03] shadow-button-hover' : ''}
       `}
     >
-      <span className="text-xl mr-2">{CATEGORY_EMOJIS[category]}</span>
-      {category}
+      <div className="flex items-center justify-center gap-2">
+        <Icon size={18} strokeWidth={2} />
+        <span>{category}</span>
+      </div>
     </button>
   )
 }
