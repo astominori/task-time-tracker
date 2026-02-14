@@ -17,29 +17,11 @@
   --shadow-button: 0 1px 2px rgba(0, 0, 0, 0.08), 0 1px 1px rgba(0, 0, 0, 0.06);
   --shadow-button-hover: 0 4px 12px rgba(0, 0, 0, 0.12), 0 2px 4px rgba(0, 0, 0, 0.08);
 
-  /* Category gradients */
-  --color-cat-study-from: #3b82f6;
-  --color-cat-study-to: #6366f1;
-  --color-cat-blog-from: #10b981;
-  --color-cat-blog-to: #06b6d4;
-  --color-cat-dev-from: #8b5cf6;
-  --color-cat-dev-to: #a855f7;
-  --color-cat-read-from: #f59e0b;
-  --color-cat-read-to: #f97316;
-  --color-cat-other-from: #6b7280;
-  --color-cat-other-to: #9ca3af;
-
-  /* Category accent (for borders etc.) */
-  --color-cat-study-accent: #3b82f6;
-  --color-cat-blog-accent: #10b981;
-  --color-cat-dev-accent: #8b5cf6;
-  --color-cat-read-accent: #f59e0b;
-  --color-cat-other-accent: #6b7280;
-
   /* Animations */
   --animate-pulse-slow: pulse-slow 2s ease-in-out infinite;
   --animate-fade-in: fade-in 0.3s ease-out;
   --animate-slide-up: slide-up 0.35s ease-out both;
+  --animate-modal-in: modal-in 0.2s ease-out;
 }
 
 @keyframes pulse-slow {
@@ -60,6 +42,17 @@
   to {
     opacity: 1;
     transform: translateY(0);
+  }
+}
+
+@keyframes modal-in {
+  from {
+    opacity: 0;
+    transform: scale(0.95) translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1) translateY(0);
   }
 }
 

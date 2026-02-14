@@ -1,32 +1,40 @@
 import { useState, useEffect, useCallback } from 'react'
-import { Clock } from 'lucide-react'
-import { Category, TaskRecord } from './types'
+import { Clock, Settings } from 'lucide-react'
+import { CategoryConfig, TaskRecord } from './types'
 import { useTimer } from './hooks/useTimer'
 import TimerDisplay from './components/TimerDisplay'
 import CategoryGrid from './components/CategoryGrid'
 import TaskHistory from './components/TaskHistory'
 import ThemeToggle from './components/ThemeToggle'
+import SettingsModal from './components/SettingsModal'
 
 export default function App() {
-  const [activeCategory, setActiveCategory] = useState<Category | null>(null)
+  const [categories, setCategories] = useState<CategoryConfig[]>([])
+  const [activeCategoryId, setActiveCategoryId] = useState<string | null>(null)
   const [startTime, setStartTime] = useState<number | null>(null)
   const [todayTasks, setTodayTasks] = useState<TaskRecord[]>([])
+  const [showSettings, setShowSettings] = useState(false)
 
-  const { elapsed, formatTime } = useTimer(activeCategory !== null, startTime)
+  const { elapsed, formatTime } = useTimer(activeCategoryId !== null, startTime)
 
   useEffect(() => {
+    window.api.getCategories().then(setCategories)
     window.api.getTodayTasks().then(setTodayTasks)
   }, [])
 
   const handleCategoryClick = useCallback(
-    async (category: Category) => {
-      if (activeCategory === category) {
+    async (categoryId: string) => {
+      const category = categories.find((c) => c.id === categoryId)
+      if (!category) return
+
+      if (activeCategoryId === categoryId) {
         // Stop timer
         const now = Date.now()
         const duration = now - startTime!
         const task: TaskRecord = {
           id: crypto.randomUUID(),
-          category,
+          categoryId: category.id,
+          categoryName: category.name,
           startTime: new Date(startTime!).toISOString(),
           endTime: new Date(now).toISOString(),
           duration
@@ -34,19 +42,21 @@ export default function App() {
 
         await window.api.saveTask(task)
         setTodayTasks((prev) => [...prev, task])
-        setActiveCategory(null)
+        setActiveCategoryId(null)
         setStartTime(null)
-      } else if (activeCategory === null) {
+      } else if (activeCategoryId === null) {
         // Start timer
-        setActiveCategory(category)
+        setActiveCategoryId(categoryId)
         setStartTime(Date.now())
       } else {
         // Switch: stop current, start new
         const now = Date.now()
         const duration = now - startTime!
+        const prevCategory = categories.find((c) => c.id === activeCategoryId)
         const task: TaskRecord = {
           id: crypto.randomUUID(),
-          category: activeCategory,
+          categoryId: activeCategoryId,
+          categoryName: prevCategory?.name || '',
           startTime: new Date(startTime!).toISOString(),
           endTime: new Date(now).toISOString(),
           duration
@@ -54,11 +64,19 @@ export default function App() {
 
         await window.api.saveTask(task)
         setTodayTasks((prev) => [...prev, task])
-        setActiveCategory(category)
+        setActiveCategoryId(categoryId)
         setStartTime(Date.now())
       }
     },
-    [activeCategory, startTime]
+    [activeCategoryId, startTime, categories]
+  )
+
+  const handleSaveCategories = useCallback(
+    async (updated: CategoryConfig[]) => {
+      await window.api.saveCategories(updated)
+      setCategories(updated)
+    },
+    []
   )
 
   return (
@@ -72,19 +90,39 @@ export default function App() {
               Task Time Tracker
             </h1>
           </div>
-          <ThemeToggle />
+          <div className="flex items-center gap-1">
+            <button
+              onClick={() => setShowSettings(true)}
+              className="p-1.5 rounded-lg bg-surface-secondary hover:bg-surface-hover transition-colors duration-200 cursor-pointer"
+              title="カテゴリ設定"
+            >
+              <Settings size={16} className="text-text-secondary" />
+            </button>
+            <ThemeToggle />
+          </div>
         </div>
 
         <TimerDisplay
-          activeCategory={activeCategory}
+          activeCategoryId={activeCategoryId}
+          categories={categories}
           formattedTime={formatTime(elapsed)}
         />
         <CategoryGrid
-          activeCategory={activeCategory}
+          categories={categories}
+          activeCategoryId={activeCategoryId}
           onCategoryClick={handleCategoryClick}
         />
-        <TaskHistory tasks={todayTasks} formatTime={formatTime} />
+        <TaskHistory tasks={todayTasks} categories={categories} formatTime={formatTime} />
       </div>
+
+      {showSettings && (
+        <SettingsModal
+          categories={categories}
+          activeCategoryId={activeCategoryId}
+          onSave={handleSaveCategories}
+          onClose={() => setShowSettings(false)}
+        />
+      )}
     </div>
   )
 }

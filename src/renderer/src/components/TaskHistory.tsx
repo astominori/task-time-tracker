@@ -1,13 +1,18 @@
 import { ListChecks } from 'lucide-react'
-import { TaskRecord, Category, CATEGORY_ICONS, CATEGORY_ACCENT_VAR } from '../types'
+import { TaskRecord, CategoryConfig } from '../types'
+import { ICON_MAP } from '../constants/icons'
 
 interface Props {
   tasks: TaskRecord[]
+  categories: CategoryConfig[]
   formatTime: (ms: number) => string
 }
 
-export default function TaskHistory({ tasks, formatTime }: Props) {
+export default function TaskHistory({ tasks, categories, formatTime }: Props) {
   const totalDuration = tasks.reduce((sum, t) => sum + t.duration, 0)
+
+  const fallbackAccent = '#6b7280'
+  const FallbackIcon = ICON_MAP['Wrench']
 
   return (
     <div className="px-4 mt-6 pb-6">
@@ -28,8 +33,10 @@ export default function TaskHistory({ tasks, formatTime }: Props) {
       ) : (
         <div className="space-y-2">
           {[...tasks].reverse().map((task, index) => {
-            const Icon = CATEGORY_ICONS[task.category as Category]
-            const accent = CATEGORY_ACCENT_VAR[task.category as Category]
+            const cat = categories.find((c) => c.id === task.categoryId)
+            const Icon = cat ? ICON_MAP[cat.icon] : FallbackIcon
+            const accent = cat ? cat.accent : fallbackAccent
+            const displayName = cat ? cat.name : task.categoryName
 
             return (
               <div
@@ -41,8 +48,8 @@ export default function TaskHistory({ tasks, formatTime }: Props) {
                 }}
               >
                 <div className="flex items-center gap-2.5">
-                  <Icon size={16} style={{ color: accent }} />
-                  <span className="text-sm font-medium text-text-primary">{task.category}</span>
+                  {Icon && <Icon size={16} style={{ color: accent }} />}
+                  <span className="text-sm font-medium text-text-primary">{displayName}</span>
                 </div>
                 <div className="text-right">
                   <div className="text-sm font-mono text-text-primary">

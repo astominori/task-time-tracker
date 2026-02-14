@@ -1,29 +1,32 @@
 import { Timer } from 'lucide-react'
-import { Category, CATEGORY_ICONS, CATEGORY_ACCENT_VAR } from '../types'
+import { CategoryConfig } from '../types'
+import { ICON_MAP } from '../constants/icons'
 
 interface Props {
-  activeCategory: Category | null
-  formattedTime: string // "HH:MM:SS"
+  activeCategoryId: string | null
+  categories: CategoryConfig[]
+  formattedTime: string
 }
 
-export default function TimerDisplay({ activeCategory, formattedTime }: Props) {
+export default function TimerDisplay({ activeCategoryId, categories, formattedTime }: Props) {
   const [h, m, s] = formattedTime.split(':')
-  const isActive = activeCategory !== null
+  const isActive = activeCategoryId !== null
+  const activeCategory = activeCategoryId
+    ? categories.find((c) => c.id === activeCategoryId)
+    : null
 
-  const CategoryIcon = activeCategory ? CATEGORY_ICONS[activeCategory] : null
-  const accentColor = activeCategory ? CATEGORY_ACCENT_VAR[activeCategory] : undefined
+  const CategoryIcon = activeCategory ? ICON_MAP[activeCategory.icon] : null
+  const accentColor = activeCategory ? activeCategory.accent : undefined
 
   return (
     <div className="text-center py-6 px-4">
-      {/* Category indicator */}
-      {isActive && CategoryIcon && (
+      {isActive && CategoryIcon && activeCategory && (
         <div className="flex items-center justify-center gap-2 mb-3 animate-fade-in">
           <CategoryIcon size={18} style={{ color: accentColor }} />
-          <span className="text-sm font-medium text-text-secondary">{activeCategory}</span>
+          <span className="text-sm font-medium text-text-secondary">{activeCategory.name}</span>
         </div>
       )}
 
-      {/* Timer digits */}
       <div className={`flex items-baseline justify-center gap-1 ${isActive ? 'animate-pulse-slow' : ''}`}>
         <div className="flex flex-col items-center">
           <span
@@ -63,7 +66,6 @@ export default function TimerDisplay({ activeCategory, formattedTime }: Props) {
         </div>
       </div>
 
-      {/* Status hint */}
       <div className="flex items-center justify-center gap-1.5 mt-3">
         <Timer size={13} className="text-text-tertiary" />
         <span className="text-xs text-text-tertiary">
