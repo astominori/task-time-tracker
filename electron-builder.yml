@@ -5,10 +5,14 @@ directories:
 files:
   - '!**/.vscode/*'
   - '!src/*'
+  - '!scripts/*'
   - '!electron.vite.config.*'
   - '!{.eslintignore,.eslintrc.cjs,.prettierignore,.prettierrc.yaml,dev-app-update.yml,CHANGELOG.md,README.md}'
   - '!{tsconfig.json,tsconfig.node.json,tsconfig.web.json}'
 mac:
+  icon: build/icon.icns
+  category: public.app-category.productivity
   target:
     - dmg
+    - dir
   artifactName: ${name}-${version}.${ext}

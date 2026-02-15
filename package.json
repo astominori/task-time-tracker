@@ -7,6 +7,7 @@
     "dev": "electron-vite dev",
     "build": "electron-vite build",
     "preview": "electron-vite preview",
+    "build:mac": "electron-vite build && electron-builder --mac",
     "postinstall": "electron-builder install-app-deps"
   },
   "dependencies": {
