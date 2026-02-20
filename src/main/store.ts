@@ -124,11 +124,46 @@ function migrateLegacyTasks(): void {
   }
 }
 
+const UUID_RE = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i
+const ISO_DATE_RE = /^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}(\.\d+)?Z$/
+const HEX_COLOR_RE = /^#[0-9a-fA-F]{6}$/
+const ICON_NAME_RE = /^[A-Za-z0-9]{1,40}$/
+
+function isValidTaskRecord(t: unknown): t is TaskRecord {
+  if (!t || typeof t !== 'object') return false
+  const r = t as Record<string, unknown>
+  return (
+    typeof r.id === 'string' && UUID_RE.test(r.id) &&
+    typeof r.categoryId === 'string' && r.categoryId.length <= 64 &&
+    typeof r.categoryName === 'string' && r.categoryName.length <= 100 &&
+    typeof r.startTime === 'string' && ISO_DATE_RE.test(r.startTime) &&
+    typeof r.endTime === 'string' && ISO_DATE_RE.test(r.endTime) &&
+    typeof r.duration === 'number' && r.duration >= 0 && r.duration <= 86_400_000
+  )
+}
+
+function isValidCategoryConfig(c: unknown): c is CategoryConfig {
+  if (!c || typeof c !== 'object') return false
+  const r = c as Record<string, unknown>
+  return (
+    typeof r.id === 'string' && r.id.length <= 64 &&
+    typeof r.name === 'string' && r.name.length >= 1 && r.name.length <= 100 &&
+    typeof r.icon === 'string' && ICON_NAME_RE.test(r.icon) &&
+    typeof r.gradientFrom === 'string' && HEX_COLOR_RE.test(r.gradientFrom) &&
+    typeof r.gradientTo === 'string' && HEX_COLOR_RE.test(r.gradientTo) &&
+    typeof r.accent === 'string' && HEX_COLOR_RE.test(r.accent) &&
+    typeof r.order === 'number' && Number.isInteger(r.order) && r.order >= 0
+  )
+}
+
 export function registerStoreHandlers(): void {
   // Run migration on startup
   migrateLegacyTasks()
 
-  ipcMain.handle('save-task', (_event, task: TaskRecord) => {
+  ipcMain.handle('save-task', (_event, task: unknown) => {
+    if (!isValidTaskRecord(task)) {
+      throw new Error('Invalid task data')
+    }
     const tasks = store.get('tasks', [])
     tasks.push(task)
     store.set('tasks', tasks)
@@ -148,8 +183,15 @@ export function registerStoreHandlers(): void {
     return store.get('categories', DEFAULT_CATEGORIES)
   })
 
-  ipcMain.handle('save-categories', (_event, categories: CategoryConfig[]) => {
-    store.set('categories', categories)
-    return categories
+  ipcMain.handle('save-categories', (_event, categories: unknown) => {
+    if (!Array.isArray(categories) || categories.length > 50) {
+      throw new Error('Invalid categories data')
+    }
+    const validated = categories.filter(isValidCategoryConfig)
+    if (validated.length !== categories.length) {
+      throw new Error('One or more categories contain invalid data')
+    }
+    store.set('categories', validated)
+    return validated
   })
 }

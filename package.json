@@ -3,6 +3,7 @@
   "version": "1.0.0",
   "description": "Task Time Tracker - タスク時間記録アプリ",
   "main": "./out/main/index.js",
+  "packageManager": "pnpm@10.30.1",
   "scripts": {
     "dev": "electron-vite dev",
     "build": "electron-vite build",

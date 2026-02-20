@@ -30,6 +30,5 @@ const api = {
 if (process.contextIsolated) {
   contextBridge.exposeInMainWorld('api', api)
 } else {
-  // @ts-expect-error fallback for non-isolated context
-  window.api = api
+  throw new Error('contextIsolation must be enabled for security')
 }
